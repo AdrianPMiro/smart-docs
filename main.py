@@ -1,41 +1,68 @@
 # main.py
-import glob, os
+import sys
 from pathlib import Path
 from datetime import datetime
 
-from generador.lector_excel import extraer_datos_excel
-from generador.modificar_docx import reemplazar_campos_docx
+from config import DATA_DIR, TEMPLATE_DIR, OUTPUT_DIR
+from readers.lector_excel import excel_reader
+from readers.docx_reader   import docx_reader
+from readers.pdf_reader    import pdf_reader
+from generators.excel_generator import excel_generator
+from generators.docx_generator  import docx_generator
+from generators.pdf_generator   import pdf_generator
 
 def arch_reader() -> dict:
-    fichero = glob.glob(os.path.join("data", "*.xls"))[0]
-    print("▶ Leyendo:", fichero)
-    datos = extraer_datos_excel(fichero)
+    """Extrae los datos del primer archivo de data_files/ y devuelve un dict."""
+    if not DATA_DIR.exists():
+        print("❌ Carpeta 'data_files/' no encontrada."); sys.exit(1)
 
+    archivos = sorted(DATA_DIR.iterdir())
+    if not archivos:
+        print("⚠️  No hay archivos en 'data_files/' para procesar."); sys.exit(0)
+
+    input_path = archivos[0]
+    ext = input_path.suffix.lower()
+
+    if ext in ('.xls', '.xlsx'):
+        return excel_reader(input_path)
+    if ext == '.docx':
+        return docx_reader(input_path)
+    if ext == '.pdf':
+        return pdf_reader(input_path)
+
+    print(f"❌ Formato '{ext}' no soportado"); sys.exit(1)
+
+def arch_generator(datos: dict) -> None:
+    """Genera un documento usando la primera plantilla de plantillas/."""
+    if not TEMPLATE_DIR.exists():
+        print("❌ Carpeta 'plantillas/' no encontrada."); sys.exit(1)
+    plantillas = sorted(TEMPLATE_DIR.iterdir())
+    if not plantillas:
+        print("⚠️  No hay plantillas en 'plantillas/' para procesar."); sys.exit(0)
+
+    tpl_path = plantillas[0]
+    ext = tpl_path.suffix.lower()
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime('%d_%H%M%S')
+    output_file = OUTPUT_DIR / f"salida_{ts}{ext}"
+
+    if ext == '.docx':
+        docx_generator(tpl_path, output_file, datos)
+
+    elif ext in ('.xls', '.xlsx'):
+        excel_generator(datos, output_file)
+
+    elif ext == '.pdf':
+        pdf_generator(tpl_path, output_file)
+
+    else:
+        print(f"❌ Extensión '{ext}' no soportada"); sys.exit(1)
+
+    print(f"✅ Documento generado en: {output_file}")
+
+if __name__ == '__main__':
+    datos = arch_reader()
+    #print(datos)
     for k, v in datos.items():
-        print(f"{k:10}: {v}")
-    return datos
-
-def arch_generator(datos: dict):
-    plantilla = Path("plantillas/NUEVA SOLICITUD_BT_GENERICA DGTEyEC 15042024.docx")
-    hoy = datetime.today().strftime("%Y%m%d_%H%M%S")
-    salida = Path(f"salidas/solicitud_rellenada_{hoy}.docx")
-    salida.parent.mkdir(parents=True, exist_ok=True)
-
-    # --- Mapeo literal_original → valor_nuevo ---
-    reemplazos = {
-        "53394761P"                : datos["nif"],
-        "Magaña"                   : datos["apellido1"],
-        "Alfonso"                  : datos["apellido2"],
-        "Jaime"                    : datos["nombre"],
-        "Jaimemagana@gmail.com"    : datos.get("email", ""),
-        "C/ Sta Teresa 59"         : datos["direccion"].strip(),
-        "28691"                    : datos["cp"],
-        "Villanueva de la Cañada"  : datos["localidad"],
-        "675 194 676"              : datos.get("telefono", ""),
-    }
-
-    reemplazar_campos_docx(plantilla, salida, reemplazos)
-
-if __name__ == "__main__":
-    data = arch_reader()
-    arch_generator(data)
+        print(f"{k:12}: {v}")
+    arch_generator(datos)
