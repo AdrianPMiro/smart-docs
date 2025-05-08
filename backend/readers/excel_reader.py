@@ -1,4 +1,4 @@
-# generador/lector_excel.py
+# generador/excel_reader.py
 import xlrd, unicodedata, re
 from typing import Dict
 

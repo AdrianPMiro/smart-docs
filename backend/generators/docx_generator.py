@@ -4,7 +4,7 @@ from typing import Dict
 from docx import Document
 
 try:
-    from readers.docx_reader import docx_reader
+    from backend.readers.docx_reader import docx_reader
 except ImportError:
     print("ADVERTENCIA: No se pudo importar 'docx_reader' desde 'readers'.")
     def docx_reader(path: Path) -> Dict[str, str]:

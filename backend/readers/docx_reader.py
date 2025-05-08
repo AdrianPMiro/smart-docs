@@ -21,7 +21,7 @@ LABEL_TO_CAMPO_DOCX = {
     'correo electronico': 'email',
     'tipo de via': 'tipo_via',
     'nombre via': 'nom_via',
-    'n\u00ba': 'numero',  # da error
+    '\u004E\u00BA': 'numero',  # da error
     # 'bloque': 'bloque',
     # 'portal': 'portal',
     # 'escalera': 'escalera'
