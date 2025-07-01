@@ -27,11 +27,9 @@ def arch_orchestrator(datos_path: Path, plantilla_path: Path, salida_path: Path)
     if ext_tpl not in TEMPLATE_EXTS_ALLOWED:
         raise ValueError(f"La plantilla debe ser DOCX o XLSX (recibido {ext_tpl}).")
 
-    # 2) Detección de sub-tipo
-    data_kind = detect_pdf_data_type_by_first_line(datos_path)                 # siempre PDF
-    tpl_kind  = detect_docx_template_type(plantilla_path) if ext_tpl == ".docx" else "excel_tpl"
+    # 2) Detección de sub-tipo únicamente para la plantilla DOCX
+    tpl_kind = detect_docx_template_type(plantilla_path) if ext_tpl == ".docx" else "excel_tpl"
 
-    print(f"==> [arch_orchestrator] Tipo de DATOS:     '{data_kind}'")
     print(f"==> [arch_orchestrator] Tipo de PLANTILLA: '{tpl_kind}'")
 
     # 3) Lectura de datos (PDF → dict)
@@ -48,7 +46,6 @@ def arch_orchestrator(datos_path: Path, plantilla_path: Path, salida_path: Path)
 
     # 5) Devolver metadatos útiles
     return {
-        "detected_data_type":     data_kind,
         "detected_template_type": tpl_kind,
         "output_path":            str(salida_path)
     }
