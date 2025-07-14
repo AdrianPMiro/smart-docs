@@ -17,15 +17,9 @@ TIPO_VIA_ABREVIATURAS = {
 ABBR_TO_FULL = {abbr: full.lower() for full, abbr in TIPO_VIA_ABREVIATURAS.items()}
 
 
-def pdf_reader(path:  Path) -> Dict[str, str]:
+def pdf_reader(path: Path) -> Dict[str, str]:
     datos = {
-        # Campos originales (comentados para futura ampliación)
-        # "Titular": None,
         "NIF": None,
-        # "Descripción del suministro": None,
-        # "Dirección de suministro": None,
-        # "TIPO DE CONTRATO": None,
-        # "No contador": None,
         "apellido1": None,
         "apellido2": None,
         "nombre": None,
@@ -61,7 +55,7 @@ def pdf_reader(path:  Path) -> Dict[str, str]:
         r"telefono movil:\s*(\d+)": "telefono"
     }
 
-    # Leer todo el texto del PDF
+    # 1) Leer todo el texto del PDF
     texto_total = ""
     with pdfplumber.open(str(path)) as pdf:
         for page in pdf.pages:
@@ -70,26 +64,33 @@ def pdf_reader(path:  Path) -> Dict[str, str]:
                 texto_total += "\n" + page_text
     texto_total = texto_total.replace("Nº", "No")
 
-    # Extraer patrones principales
+    # 2) Extraer patrones principales
     for patron, clave in patrones_principales.items():
         if match := re.search(patron, texto_total):
             datos[clave] = match.group(1).strip()
 
-    # Extraer patrones adicionales
+    # 3) Extraer patrones adicionales
     for patron, clave in patrones_adicionales.items():
         if match := re.search(patron, texto_total, re.IGNORECASE):
             datos[clave] = match.group(1).strip()
 
-    # Descomponer dirección completa en tipo_via, nom_via, numero, cp, localidad, provincia
+    # 4) Descomponer dirección
     descomponer_direccion(datos.get("Dirección de suministro"), datos)
 
-    # Estandarizar tipo_via: convertir abreviatura a nombre completo en minúsculas
+    # 5) Estandarizar tipo_via
     if datos.get("tipo_via"):
         datos["tipo_via"] = estandarizar_tipo_via(datos["tipo_via"])
 
-    # Extraer nombre y apellidos del Titular si no se capturaron antes
+    # 6) Extraer nombre y apellidos del Titular si faltan
     extraer_nombre_apellidos(datos.get("Titular"), datos)
 
+    # 7) **Asignar valores por defecto si faltan**
+    if not datos.get("telefono"):
+        datos["telefono"] = "675194676"
+    if not datos.get("email"):
+        datos["email"] = "Jaimemagana@gmail.com"
+
+    # 8) Construir el resultado final
     resultado = {
         "nif": datos.get("NIF"),
         "nombre": datos.get("nombre"),
@@ -98,25 +99,17 @@ def pdf_reader(path:  Path) -> Dict[str, str]:
         "tipo_via": datos.get("tipo_via"),
         "nom_via": datos.get("nom_via"),
         "telefono": datos.get("telefono"),
+        "email": datos.get("email"),
         "cp": datos.get("cp"),
         "localidad": datos.get("localidad"),
-        # Campos comentados para posible uso futuro:
-        # "Descripción del suministro": datos.get("Descripción del suministro"),
-        # "Dirección de suministro": datos.get("Dirección de suministro"),
-        # "TIPO DE CONTRATO": datos.get("TIPO DE CONTRATO"),
-        # "No contador": datos.get("No contador"),
-        # "email": datos.get("email"),
-        # "numero": datos.get("numero"),
-        # "provincia": datos.get("provincia"),
+        # otros campos comentados si se necesitan en el futuro
     }
     return resultado
 
 
 def descomponer_direccion(direccion: str, datos: dict):
-
     if not direccion:
         return
-
     patron = (
         r'(?P<tipo_via>C/|AVDA\.|PZA\.|Pº\.)\s+'
         r'(?P<nom_via>.+?),\s*'
@@ -133,12 +126,8 @@ def descomponer_direccion(direccion: str, datos: dict):
         datos["localidad"] = match.group("localidad").strip()
         datos["provincia"] = match.group("provincia").strip()
 
-    # *** Otras funcionalidades comentadas para uso futuro ***
-    # datos["email"] etc.
-
 
 def extraer_nombre_apellidos(titular: Union[str, None], datos: dict):
-
     if not titular:
         return
     partes = titular.strip().split()

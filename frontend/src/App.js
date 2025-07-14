@@ -38,12 +38,9 @@ export default function App() {
     const f=e.dataTransfer.files; if(!f.length) return;
     const file=f[0];
     const allowed = t==="data"
-      ? ["application/pdf",
-         "application/vnd.ms-excel",
-         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+      ? ["application/pdf"]
       : ["application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+         "application/vnd.ms-excel"];
     if(!allowed.includes(file.type)){
       alert(`Formato no válido para ${t==="data"?"DATA":"PLANTILLA"}`);
       setIsDraggingData(false); setIsDraggingTpl(false);
@@ -109,16 +106,18 @@ const handleSubmit = async e => {
             style={{cursor:"pointer"}}
             tabIndex={0}
           >
+            {/* Por el momento solo se permite subir archivos .pdf para DATA */}
             <input
               type="file"
-              accept=".pdf,.xls,"
+              accept=".pdf"
               style={{display:"none"}}
               onChange={e=>setDataFile(e.target.files[0]||null)}
             />
             <div className="file-upload-icon file-data">📄</div>
             <div className="file-upload-content">
               <span className="file-upload-title">DATA</span>
-              <span className="file-upload-badge">.pdf · .xls · .xlsx · .docx</span>
+              {/* TODO: Añadir más archivos soportados: · .xls · .xlsx · .docx */}
+              <span className="file-upload-badge">.pdf</span>
               <span className="file-upload-action">
                 {isDraggingData?"Suelta el archivo aquí":"Seleccionar o arrastrar archivo"}
               </span>
@@ -137,14 +136,14 @@ const handleSubmit = async e => {
           >
             <input
               type="file"
-              accept=".docx"
+              accept=".docx,.xls"
               style={{display:"none"}}
               onChange={e=>setTplFile(e.target.files[0]||null)}
             />
             <div className="file-upload-icon file-tpl">📁</div>
             <div className="file-upload-content">
               <span className="file-upload-title">PLANTILLA</span>
-              <span className="file-upload-badge">.docx · .xlsx</span>
+              <span className="file-upload-badge">.docx · .xls</span>
               <span className="file-upload-action">
                 {isDraggingTpl?"Suelta el archivo aquí":"Seleccionar o arrastrar archivo"}
               </span>
