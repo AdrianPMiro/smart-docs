@@ -38,8 +38,8 @@ async def process(
     tpl_ext  = Path(tpl_file.filename).suffix.lower()
     if tpl_ext not in (".docx",):
         raise HTTPException(400, "La PLANTILLA debe ser .docx")
-    if data_ext not in (".pdf",):
-        raise HTTPException(400, "DATA debe ser .pdf")
+    if data_ext not in (".pdf", ".xls",):
+        raise HTTPException(400, "DATA debe ser .pdf, .xls")
 
     # Guardar en carpeta temporal
     with tempfile.TemporaryDirectory() as td:

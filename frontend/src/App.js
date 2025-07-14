@@ -73,6 +73,18 @@ const handleSubmit = async e => {
       throw new Error(err.detail || "Error servidor");
     }
     // … resto del código para descarga
+    const disposition = r.headers.get('Content-Disposition');
+    const filename = disposition
+      ? disposition.split('filename=')[1].replace(/"/g, '')
+      : `resultado${tplFile.name.slice(-5)}`;
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   } catch(err) {
     console.error("[React] → Error en fetch:", err);
     alert(err.message || "Error");
@@ -99,7 +111,7 @@ const handleSubmit = async e => {
           >
             <input
               type="file"
-              accept=".pdf,.xls,.xlsx,.docx"
+              accept=".pdf,.xls,"
               style={{display:"none"}}
               onChange={e=>setDataFile(e.target.files[0]||null)}
             />
@@ -125,7 +137,7 @@ const handleSubmit = async e => {
           >
             <input
               type="file"
-              accept=".docx,.xlsx"         /* extensión Excel incluida */
+              accept=".docx"
               style={{display:"none"}}
               onChange={e=>setTplFile(e.target.files[0]||null)}
             />

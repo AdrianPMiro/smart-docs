@@ -1,53 +1,55 @@
 """
-Detector para archivos DOCX de datos.
+Detector de plantillas DOCX
+---------------------------
+Imprime las primeras líneas y devuelve el tipo de plantilla.
 
-Extrae las primeras líneas no vacías del documento y las imprime
-para que puedas ajustar las palabras clave de detección.
-Devuelve un string representando el tipo de documento
-según coincidencias de palabras clave.
+Las keywords son UNA sola frase (o palabra) que sabemos que no cambiará.
 """
 from pathlib import Path
 from typing import Tuple
 from docx import Document
 import re
 
-# Palabras clave para cada tipo de DOCX
+# --------- Frase clave (mayúsculas/ minúsculas da igual) → tipo ----------
 KEYWORDS_TO_KIND: Tuple[Tuple[str, str], ...] = (
-    ("SOLICITUD DE INSCRIPCIÓN", "solicitud_bt"),
-    # Añade aquí ("otra palabra", "otro_tipo") según tus documentos
+    # Plantilla 1: “MTD + UNIFILAR Monofásico…”
+    ("DIRECCIÓN GENERAL DE INDUSTRIA, ENERGÍA Y MINAS", "tpl_unifilar_monofasico"),
+
+    # Plantilla 2: “NUEVA SOLICITUD_BT_GENERICA…”
+    ("1.- DATOS DEL TITULAR DE LA INSTALACIÓN",          "tpl_solicitud_bt"),
+
+    # Si tuvieras un tercer DOCX métele aquí su frase estable:
+    # ("OTRA FRASE FIJA", "tpl_otro"),
 )
 
-def detect_docx_data_type_by_first_lines(docx_path: Path) -> str:
-    """Lee las primeras líneas y clasifica el DOCX."""
+def detect_docx_template_type(docx_path: Path) -> str:
     if not docx_path.exists() or docx_path.suffix.lower() != ".docx":
-        print(f"[docx_detector] ❌ Ruta inválida o no es DOCX: {docx_path}")
+        print(f"[docx_detector] ❌ No es DOCX o no existe: {docx_path}")
         return "invalid_docx"
 
     try:
         doc = Document(docx_path)
     except Exception as e:
-        print(f"[docx_detector] ⚠️  Error al abrir DOCX '{docx_path.name}': {e}")
-        return "docx_read_error"
+        print(f"[docx_detector] ⚠️  Error abriendo '{docx_path.name}': {e}")
+        return "docx_open_error"
 
-    lines = []
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if text:
-            lines.append(text)
-            if len(lines) >= 5:
-                break
-
+    # Tomamos las primeras 5 líneas no vacías
+    lines = [p.text.strip() for p in doc.paragraphs if p.text.strip()][:5]
     first_lines = "\n".join(lines)
+
     if not first_lines:
-        print(f"[docx_detector] No se encontró texto en el documento: {docx_path.name}")
+        print(f"[docx_detector] Documento vacío: {docx_path.name}")
         return "no_text_found"
 
-    print(f"\n[docx_detector] ► Primeras líneas de '{docx_path.name}':\n    {first_lines}\n")
+    print(f"\n[docx_detector] ► Primeras líneas de '{docx_path.name}':")
+    for ln in lines:
+        print("   ", ln)
+    print()
 
-    text_upper = first_lines.upper()
-    for keyword, kind in KEYWORDS_TO_KIND:
-        if re.search(keyword.upper(), text_upper):
-            print(f"[docx_detector] → Tipo detectado: '{kind}' (keyword: '{keyword}')")
+    upper = first_lines.upper()
+    for kw, kind in KEYWORDS_TO_KIND:
+        if kw.upper() in upper:
+            print(f"[docx_detector] → Tipo detectado: '{kind}' (kw='{kw}')")
             return kind
 
     print(f"[docx_detector] → Tipo de DOCX desconocido para '{docx_path.name}'")

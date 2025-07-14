@@ -162,36 +162,36 @@ def docx_reader(doc_path: Path) -> Dict[str, str]:
 
 
 
-if __name__ == '__main__':
-    test_doc_path = Path("input_file_0.docx")  # Reemplaza con el nombre de tu archivo DOCX
-
-    print(f"Intentando leer datos del documento: {test_doc_path}")
-
-    if test_doc_path.exists():
-        datos_extraidos = docx_reader(test_doc_path)
-
-        print("\n--- Datos Extraídos del DOCX (Campos Seleccionados) ---")
-        if datos_extraidos:
-            # Imprimir solo los campos que el usuario quiere, en el orden que especificó
-            print(f"nif         : {datos_extraidos.get('nif')}")
-            print(f"nombre      : {datos_extraidos.get('nombre')}")
-            print(f"apellido1   : {datos_extraidos.get('apellido1')}")
-            print(f"apellido2   : {datos_extraidos.get('apellido2')}")
-            print(f"email       : {datos_extraidos.get('email')}")
-            print(f"direccion   : {datos_extraidos.get('direccion')}")  # Debe incluir el número si 'numero' se extrae
-            print(f"cp          : {datos_extraidos.get('cp')}")
-            print(f"localidad   : {datos_extraidos.get('localidad')}")
-            print(f"provincia   : {datos_extraidos.get('provincia')}")
-            print(f"telefono    : {datos_extraidos.get('telefono')}")
-            # Los siguientes son componentes, útiles para depurar la dirección
-            print(f"tipo_via    : {datos_extraidos.get('tipo_via')}")
-            print(f"nom_via     : {datos_extraidos.get('nom_via')}")
-            print(f"numero      : {datos_extraidos.get('numero')}")  # Este es el que estamos tratando de arreglar
-        else:
-            print("No se extrajeron datos o hubo un error.")
-
-    else:
-        print(f"\n⚠️  El archivo de prueba '{test_doc_path}' no se encontró.")
-        print("Por favor, sube tu archivo DOCX y ajusta la variable 'test_doc_path' en el código.")
-
-
+# '''
+# if __name__ == '__main__':
+#     test_doc_path = Path("input_file_0.docx")  # Reemplaza con el nombre de tu archivo DOCX
+#
+#     print(f"Intentando leer datos del documento: {test_doc_path}")
+#
+#     if test_doc_path.exists():
+#         datos_extraidos = docx_reader(test_doc_path)
+#
+#         print("\n--- Datos Extraídos del DOCX (Campos Seleccionados) ---")
+#         if datos_extraidos:
+#             # Imprimir solo los campos que el usuario quiere, en el orden que especificó
+#             print(f"nif         : {datos_extraidos.get('nif')}")
+#             print(f"nombre      : {datos_extraidos.get('nombre')}")
+#             print(f"apellido1   : {datos_extraidos.get('apellido1')}")
+#             print(f"apellido2   : {datos_extraidos.get('apellido2')}")
+#             print(f"email       : {datos_extraidos.get('email')}")
+#             print(f"direccion   : {datos_extraidos.get('direccion')}")  # Debe incluir el número si 'numero' se extrae
+#             print(f"cp          : {datos_extraidos.get('cp')}")
+#             print(f"localidad   : {datos_extraidos.get('localidad')}")
+#             print(f"provincia   : {datos_extraidos.get('provincia')}")
+#             print(f"telefono    : {datos_extraidos.get('telefono')}")
+#             # Los siguientes son componentes, útiles para depurar la dirección
+#             print(f"tipo_via    : {datos_extraidos.get('tipo_via')}")
+#             print(f"nom_via     : {datos_extraidos.get('nom_via')}")
+#             print(f"numero      : {datos_extraidos.get('numero')}")  # Este es el que estamos tratando de arreglar
+#         else:
+#             print("No se extrajeron datos o hubo un error.")
+#
+#     else:
+#         print(f"\n⚠️  El archivo de prueba '{test_doc_path}' no se encontró.")
+#         print("Por favor, sube tu archivo DOCX y ajusta la variable 'test_doc_path' en el código.")
+# '''

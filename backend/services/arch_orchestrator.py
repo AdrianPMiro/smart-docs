@@ -1,21 +1,22 @@
-# backend/services/arch_orchestrator.py
 from pathlib import Path
 
-# --- readers / generators ---
-from backend.readers.pdf_reader          import pdf_reader
-from backend.generators.docx_generator   import docx_generator
-from backend.generators.excel_generator  import excel_generator
+# readers
+from backend.readers.pdf_reader import pdf_reader
+from backend.readers.excel_reader import excel_reader # <--- 1. IMPORTAR EXCEL READER
 
-# --- detectores ---
-from backend.services.docx_template_detector import detect_docx_template_type
+# generators
+from backend.generators.docx_generator  import docx_generator
+# from backend.generators.excel_generator import excel_generator # Se elimina si la salida es solo docx
 
-# --- extensiones permitidas ---
-DATA_EXTS_ALLOWED     = {".pdf"}
-TEMPLATE_EXTS_ALLOWED = {".docx", ".xlsx"}   # Word y Excel
+# detectores
+# from backend.services.pdf_detector    import detect_pdf_data_type_by_first_line
+from backend.services.docx_detector import detect_docx_template_type
+
+# 2. AÑADIR .xlsx A LAS EXTENSIONES PERMITIDAS
+DATA_EXTS_ALLOWED     = {".pdf", ".xls", ".xlsx"}
+TEMPLATE_EXTS_ALLOWED = {".docx"}
 
 def arch_orchestrator(datos_path: Path, plantilla_path: Path, salida_path: Path) -> dict:
-    """Procesa un PDF y genera un documento final usando una plantilla DOCX o XLSX."""
-
     print(f"[arch_orchestrator] Recibidos: datos='{datos_path.name}', plantilla='{plantilla_path.name}'")
 
     # 1) Validación de extensiones
@@ -23,32 +24,34 @@ def arch_orchestrator(datos_path: Path, plantilla_path: Path, salida_path: Path)
     ext_tpl   = plantilla_path.suffix.lower()
 
     if ext_datos not in DATA_EXTS_ALLOWED:
-        raise ValueError(f"El archivo de datos debe ser PDF (recibido {ext_datos}).")
+        # 3. CORREGIR MENSAJE DE ERROR
+        raise ValueError(f"El archivo de datos debe ser PDF o Excel (recibido {ext_datos})")
     if ext_tpl not in TEMPLATE_EXTS_ALLOWED:
-        raise ValueError(f"La plantilla debe ser DOCX o XLSX (recibido {ext_tpl}).")
+        raise ValueError(f"La plantilla debe ser .docx (recibido {ext_tpl})")
 
-    # 2) Detección de sub-tipo
-    data_kind = detect_pdf_data_type_by_first_line(datos_path)                 # siempre PDF
-    tpl_kind  = detect_docx_template_type(plantilla_path) if ext_tpl == ".docx" else "excel_tpl"
-
-    print(f"==> [arch_orchestrator] Tipo de DATOS:     '{data_kind}'")
+    # 2) Detectar tipo de plantilla
+    tpl_kind  = detect_docx_template_type(plantilla_path)
     print(f"==> [arch_orchestrator] Tipo de PLANTILLA: '{tpl_kind}'")
 
-    # 3) Lectura de datos (PDF → dict)
-    datos = pdf_reader(datos_path)
+    # 3) Leer datos
+    datos = None
+    if ext_datos == ".pdf":
+        datos = pdf_reader(datos_path)
+    elif ext_datos in (".xls", ".xlsx"):
+        datos = excel_reader(datos_path)
 
-    # 4) Generación según el tipo de plantilla
-    if ext_tpl == ".docx":
-        docx_generator(plantilla_path, salida_path, datos)
-    else:  # ".xlsx"
-        excel_generator(plantilla_path, salida_path, datos)
+    if datos is None:
+        raise RuntimeError(f"No se pudieron leer los datos del archivo '{datos_path.name}'")
+
+    # 4) Generar salida (solo .docx)
+    docx_generator(plantilla_path, salida_path, datos)
 
     if not salida_path.exists():
-        raise RuntimeError(f"[arch_orchestrator] No se creó el archivo '{salida_path.name}'")
+        raise RuntimeError(f"[arch_orchestrator] No se creó '{salida_path.name}'")
 
-    # 5) Devolver metadatos útiles
+    # 5) Devuelve metainformación para logs / front
     return {
-        "detected_data_type":     data_kind,
+        "detected_data_type":     ext_datos, # Usar la extensión directamente
         "detected_template_type": tpl_kind,
         "output_path":            str(salida_path)
     }
