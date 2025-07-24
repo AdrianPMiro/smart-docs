@@ -55,7 +55,7 @@ def arch_orchestrator(datos_path: Path, plantilla_path: Path, salida_path: Path)
     if ext_tpl == ".docx":
         docx_generator(plantilla_path, salida_path, datos)
     else:  # ".xls" o ".xlsx"
-        excel_generator(plantilla_path, salida_path, datos)
+        excel_generator(datos, plantilla_path, salida_path)
 
     if not salida_path.exists():
         raise RuntimeError(f"[arch_orchestrator] No se creó '{salida_path.name}'")

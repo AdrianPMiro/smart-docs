@@ -36,10 +36,12 @@ async def process(
     # Validar extensiones
     data_ext = Path(data_file.filename).suffix.lower()
     tpl_ext  = Path(tpl_file.filename).suffix.lower()
-    if tpl_ext not in (".docx",):
-        raise HTTPException(400, "La PLANTILLA debe ser .docx")
-    if data_ext not in (".pdf", ".xls",):
-        raise HTTPException(400, "DATA debe ser .pdf, .xls")
+    if tpl_ext not in (".docx", ".xlsx",):
+        raise HTTPException(400, "La PLANTILLA debe ser .docx o .xlsx")
+    elif tpl_ext == ".xls":
+        raise HTTPException(400, "La PLANTILLA no puede ser .xls (Recuerda cambiarlo a .xlsx)")
+    if data_ext not in (".pdf",):
+        raise HTTPException(400, "DATA debe ser .pdf")
 
     # Guardar en carpeta temporal
     with tempfile.TemporaryDirectory() as td:
