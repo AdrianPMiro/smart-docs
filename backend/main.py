@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import tempfile, shutil, io
 
-# ⬇️ import relativo – ya estás dentro de backend/
 from services.arch_orchestrator import arch_orchestrator
 
 app = FastAPI(title="Smart-Docs API", version="0.2.0")
