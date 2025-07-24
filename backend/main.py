@@ -13,7 +13,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://31.97.216.81:8888"
+        "http://31.97.216.81:8000",
+        "http://31.97.216.81:8888",
+        "https://31.97.216.81:3001"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
