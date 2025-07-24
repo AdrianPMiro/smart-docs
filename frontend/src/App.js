@@ -8,7 +8,7 @@ export default function App() {
   const [isDraggingData, setIsDraggingData] = useState(false);
   const [isDraggingTpl, setIsDraggingTpl] = useState(false);
 
-  const API = "http://31.97.216.81:8000/api/process";
+  const API = "http://31.97.216.81:8000";
 
   /* ---------- anti-brillo pegado ---------- */
   useEffect(() => {
